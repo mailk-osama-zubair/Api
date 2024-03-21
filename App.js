@@ -1,43 +1,49 @@
-import { FlatList, StyleSheet, Text, View, Image } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View, Image } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 const App = () => {
   
-  const FetchApi = async () => {
-    const Api = await fetch('https://api.thecatapi.com/v1/images/search?limit=10'); 
-    const Passed = await Api.json();
+  const [loading, setLoading] = useState(true);
+  const [apiData, setApiData] = useState([]);
 
-    console.log(Passed);
-    setApiData(Passed);
+  const FetchApi = async () => {
+    try {
+      const Api = await fetch('https://api.thecatapi.com/v1/images/search?limit=20'); 
+      const Passed = await Api.json();
+  
+      console.log(Passed);
+      setApiData(Passed);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     FetchApi();
-  }, []); // 
-
-  const [apiData, setApiData] = useState([]);
-
+  }, []); 
   return (
     <View style={styles.container}>
-      <View>
-        <Text>
-          API
-        </Text>
-      </View>
-      <FlatList 
-        data={apiData}
-        keyExtractor={(item, index) => index.toString()} // Assuming index is unique, otherwise use some unique ID from data
-        renderItem={({ item }) => {
-          return (
-            <View style={styles.imageContainer}>
-              <Image 
-                style={styles.image}
-                source={{ uri: item.url }} 
-              />
-            </View>
-          );
-        }}
-      />
+      {loading ? 
+        <ActivityIndicator size="large" color="red" style={styles.loader} />
+       : 
+      
+        <FlatList 
+          data={apiData}
+          renderItem={({ item }) => {
+            return (
+              <View style={styles.imageContainer}>
+                <Image 
+                  style={styles.image}
+                  source={{ uri: item.url }}
+                />
+              
+              </View>
+            );
+          }}
+        />
+        }
     </View>
   );
 }
@@ -48,14 +54,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'green',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loader: {
+    marginBottom: 20,
   },
   imageContainer: {
     height: 200,
-    width: '60%',
-    // borderWidth: 1,
+    width: 200,
     marginBottom: 10,
-    alignSelf:'center',
-    marginTop:'10%',
     borderRadius:20,
 
   },
@@ -63,6 +71,6 @@ const styles = StyleSheet.create({
     flex: 1,
     resizeMode: 'cover',
     borderRadius:20,
-
+marginTop:20,
   }
 });
